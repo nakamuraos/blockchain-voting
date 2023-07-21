@@ -1,8 +1,15 @@
-export default function LoadingCircle() {
+/**
+ * @since 2023/07/16
+ * @author ThinhHV <thinh@thinhhv.com>
+ * @description description
+ * @copyright (c) 2023 Company Platform
+ */
+
+export default function LoadingCircle(props: any) {
   return (
     <svg
       aria-hidden="true"
-      className="h-4 w-4 animate-spin fill-gray-600 text-gray-200"
+      className={`h-${props.height || 4} w-${props.width || 4} animate-spin fill-gray-600 text-gray-200`}
       viewBox="0 0 100 101"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -16,5 +23,5 @@ export default function LoadingCircle() {
         fill="currentFill"
       />
     </svg>
-  );
+  )
 }

@@ -1,35 +1,36 @@
-import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
-import cx from "classnames";
-import { sfPro, inter } from "./fonts";
-import Nav from "@/components/layout/nav";
-import Footer from "@/components/layout/footer";
-import { Suspense } from "react";
-import { NextAuthProvider } from "./providers";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+/**
+ * @since 2023/07/16
+ * @author ThinhHV <thinh@thinhhv.com>
+ * @description description
+ * @copyright (c) 2023 Company Platform
+ */
+
+import './globals.css'
+import { Analytics } from '@vercel/analytics/react'
+import cx from 'classnames'
+import { sfPro, inter } from './fonts'
+import Nav from '@/components/layout/nav'
+import Footer from '@/components/layout/footer'
+import { Suspense } from 'react'
+import { NextAuthProvider } from './providers'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export const metadata = {
-  title: "PhotoGraphy Voting",
-  description:
-    "A electoral system based blockchain.",
+  title: 'PhotoGraphy Voting',
+  description: 'A electoral system based blockchain.',
   twitter: {
-    card: "summary_large_image",
-    title: "PhotoGraphy Voting",
-    description:
-      "A electoral system based blockchain.",
-    creator: "@steventey",
+    card: 'summary_large_image',
+    title: 'PhotoGraphy Voting',
+    description: 'A electoral system based blockchain.',
+    creator: '@steventey',
   },
-  metadataBase: new URL("http://localhost:3000"),
-  themeColor: "#FFF",
-};
+  metadataBase: new URL('http://localhost:3000'),
+  themeColor: '#FFF',
+}
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = await getServerSession(authOptions);
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions)
 
   return (
     <html lang="en">
@@ -41,12 +42,12 @@ export default async function RootLayout({
             <Nav session={session} />
           </Suspense>
           <main className="flex min-h-screen w-full flex-col items-center justify-center py-32">
-            {children}
+            <Suspense fallback="...">{children}</Suspense>
           </main>
           <Footer />
           <Analytics />
         </NextAuthProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -1,14 +1,21 @@
-"use client";
+/**
+ * @since 2023/07/16
+ * @author ThinhHV <thinh@thinhhv.com>
+ * @description description
+ * @copyright (c) 2023 Company Platform
+ */
 
-import { useState } from "react";
-import { useDemoModal } from "@/components/home/demo-modal";
-import Popover from "@/components/shared/popover";
-import Tooltip from "@/components/shared/tooltip";
-import { ChevronDown } from "lucide-react";
+'use client'
+
+import { useState } from 'react'
+import { useDemoModal } from '@/components/home/demo-modal'
+import Popover from '@/components/shared/popover'
+import Tooltip from '@/components/shared/tooltip'
+import { ChevronDown } from 'lucide-react'
 
 export default function ComponentGrid() {
-  const { DemoModal, setShowDemoModal } = useDemoModal();
-  const [openPopover, setOpenPopover] = useState(false);
+  const { DemoModal, setShowDemoModal } = useDemoModal()
+  const [openPopover, setOpenPopover] = useState(false)
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
       <DemoModal />
@@ -41,8 +48,7 @@ export default function ComponentGrid() {
         >
           <p className="text-gray-600">Popover</p>
           <ChevronDown
-            className={`h-4 w-4 text-gray-600 transition-all ${openPopover ? "rotate-180" : ""
-              }`}
+            className={`h-4 w-4 text-gray-600 transition-all ${openPopover ? 'rotate-180' : ''}`}
           />
         </button>
       </Popover>
@@ -52,5 +58,5 @@ export default function ComponentGrid() {
         </div>
       </Tooltip>
     </div>
-  );
+  )
 }

@@ -1,17 +1,25 @@
-"use client";
+/**
+ * @since 2023/07/16
+ * @author ThinhHV <thinh@thinhhv.com>
+ * @description description
+ * @copyright (c) 2023 Company Platform
+ */
 
-import { useState } from "react";
-import { signOut } from "next-auth/react";
-import { LogOut } from "lucide-react";
-import Popover from "@/components/shared/popover";
-import Image from "next/image";
-import { trimAddress } from "@/lib/utils";
+'use client'
+
+import { useState } from 'react'
+import { signOut } from 'next-auth/react'
+import { LogOut } from 'lucide-react'
+import Popover from '@/components/shared/popover'
+import Image from 'next/image'
+import { trimAddress } from '@/lib/utils'
+import MetaMaskLogo from '@/assets/metamask.svg'
 
 export default function UserDropdown({ session }: { session: any }) {
-  const { address } = session || {};
-  const [openPopover, setOpenPopover] = useState(false);
+  const { address } = session || {}
+  const [openPopover, setOpenPopover] = useState(false)
 
-  if (!address) return null;
+  if (!address) return null
 
   return (
     <div className="relative inline-block text-left">
@@ -47,17 +55,12 @@ export default function UserDropdown({ session }: { session: any }) {
       >
         <button
           onClick={() => setOpenPopover(!openPopover)}
-          className="flex h-8 w-44 items-center justify-center rounded overflow-hidden border border-gray-300 transition-all duration-75 focus:outline-none active:scale-95 sm:h-9 sm:w-44"
+          className="flex h-8 w-44 items-center justify-center overflow-hidden rounded border border-gray-300 transition-all duration-75 focus:outline-none active:scale-95 sm:h-9 sm:w-44"
         >
-          <Image
-            alt={address}
-            src={`https://avatars.dicebear.com/api/micah/${address}.svg`}
-            width={40}
-            height={40}
-          />
+          <Image src={MetaMaskLogo.src} alt="metamask" width={50} height={50} className="h-5 w-5" />
           <div>{trimAddress(address)}</div>
         </button>
       </Popover>
     </div>
-  );
+  )
 }
