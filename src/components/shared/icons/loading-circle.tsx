@@ -9,7 +9,9 @@ export default function LoadingCircle(props: any) {
   return (
     <svg
       aria-hidden="true"
-      className={`h-${props.height || 4} w-${props.width || 4} animate-spin fill-gray-600 text-gray-200`}
+      className={`h-${props.height || 4} w-${props.width || 4} ${
+        props.className || ''
+      } animate-spin fill-gray-600 text-gray-200`}
       viewBox="0 0 100 101"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

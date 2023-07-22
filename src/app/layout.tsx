@@ -15,6 +15,7 @@ import { Suspense } from 'react'
 import { NextAuthProvider } from './providers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { Toaster } from 'react-hot-toast'
 
 export const metadata = {
   title: 'PhotoGraphy Voting',
@@ -35,18 +36,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>
-        <NextAuthProvider>
-          <div className="fixed h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100" />
-          <Suspense fallback="...">
+        <Suspense fallback="...">
+          <NextAuthProvider>
+            <Toaster />
+            <div className="fixed h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100" />
             {/* @ts-expect-error Server Component */}
             <Nav session={session} />
-          </Suspense>
-          <main className="flex min-h-screen w-full flex-col items-center justify-center py-32">
-            <Suspense fallback="...">{children}</Suspense>
-          </main>
-          <Footer />
-          <Analytics />
-        </NextAuthProvider>
+            <main className="flex min-h-screen w-full flex-col items-center justify-center py-32">
+              {children}
+            </main>
+            <Footer />
+            <Analytics />
+          </NextAuthProvider>
+        </Suspense>
       </body>
     </html>
   )

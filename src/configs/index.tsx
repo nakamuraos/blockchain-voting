@@ -8,6 +8,6 @@
 export const CONFIGS = {
   CHAIN_ID: +(process.env.NEXT_PUBLIC_CHAIN_ID || 5),
   RPC: process.env.NEXT_PUBLIC_RPC || '',
-  TOKEN_VOTING: process.env.NEXT_PUBLIC_TOKEN_VOTING,
-  CONTRACT_VOTING: process.env.NEXT_PUBLIC_CONTRACT_VOTING,
+  TOKEN_VOTING: (process.env.NEXT_PUBLIC_TOKEN_VOTING || '0x') as `0x${string}`,
+  CONTRACT_VOTING: (process.env.NEXT_PUBLIC_CONTRACT_VOTING || '0x') as `0x${string}`,
 }
