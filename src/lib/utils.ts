@@ -7,6 +7,10 @@
 
 import ms from 'ms'
 
+export const formatTime = (str: any) => {
+  return new Date(str).toISOString().replace('T', ' ').split('.')[0].replaceAll('-', '/')
+}
+
 export const trimAddress = (str: string) => str.slice(0, 6) + '...' + str.slice(-4)
 
 export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {

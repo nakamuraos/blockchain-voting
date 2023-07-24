@@ -3,11 +3,17 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ["lh3.googleusercontent.com", "vercel.com", "picsum.photos", "github.com"],
+    domains: [
+      'lh3.googleusercontent.com',
+      'vercel.com',
+      'picsum.photos',
+      'github.com',
+      'raw.githubusercontent.com',
+    ],
   },
   async redirects() {
-    return [];
+    return []
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

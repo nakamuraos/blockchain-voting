@@ -14,6 +14,7 @@ import { signIn } from 'next-auth/react'
 import { useConnect, useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import { CONFIGS } from 'src/configs'
+import { config } from '@/app/providers'
 
 const SignInModal = ({
   showSignInModal,
@@ -38,7 +39,7 @@ const SignInModal = ({
     isError,
     error: errorConnect,
   } = useConnect({
-    connector: new MetaMaskConnector(),
+    connector: config.connectors[1],
   })
 
   useEffect(() => {

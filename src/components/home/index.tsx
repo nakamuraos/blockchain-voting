@@ -30,6 +30,7 @@ import { useSignInModal } from '@/components/layout/sign-in-modal'
 import { useSession } from 'next-auth/react'
 import { toast } from 'react-hot-toast'
 import { config } from '../../app/providers'
+import { formatTime } from '@/lib/utils'
 // import { useVotingModal } from '@/components/layout/voting-modal'
 
 const TOTAL_ITEM = 5
@@ -49,8 +50,10 @@ const contract = {
 const Home = () => {
   const [data, setData] = useState<any[]>([])
   const [dataTotalVote, setDataTotalVote] = useState<number>(0)
+  const [dataTime, setDataTime] = useState<number[]>([0, 0])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [hash, setHash] = useState<string>('')
+  const [hashApprove, setHashApprove] = useState<string>('')
   const [imageId, setImageId] = useState<number>(0)
   const { data: session } = useSession()
   const { chain } = useNetwork()
@@ -95,11 +98,44 @@ const Home = () => {
     ...contract.voting,
     functionName: 'totalVote',
   })
+  // Get start/end time
+  const {
+    data: dataFetchTime,
+    isSuccess: isSuccessFetchTime,
+    refetch: refetchTime,
+  } = useContractReads({
+    enabled: false,
+    contracts: [
+      {
+        ...contract.voting,
+        functionName: 'votingStartTime',
+      },
+      {
+        ...contract.voting,
+        functionName: 'votingEndTime',
+      },
+    ],
+  })
   // Process approve
-  const { isLoading: isLoadingApprove, write: writeApprove } = useContractWrite({
+  const {
+    data: dataApprove,
+    isLoading: isLoadingApprove,
+    isSuccess: isSuccessApprove,
+    write: writeApprove,
+  } = useContractWrite({
     ...contract.token,
     functionName: 'approve',
     args: [CONFIGS.CONTRACT_VOTING, 1000000 * Math.pow(10, 18)],
+  })
+  // approve
+  const {
+    isFetching: isFetchingTransactionApprove,
+    isLoading: isLoadingTransactionApprove,
+    isSuccess: isSuccessTransactionApprove,
+    refetch: refetchTransactionApprove,
+  } = useWaitForTransaction({
+    enabled: false,
+    hash: hashApprove as any,
   })
   // Check allowance
   const { data: dataAllowance, refetch: refetchDataAllowance } = useContractRead({
@@ -135,6 +171,7 @@ const Home = () => {
   useEffect(() => {
     refetchList()
     refetchTotalVote()
+    refetchTime()
   }, [])
 
   useEffect(() => {
@@ -156,10 +193,40 @@ const Home = () => {
   }, [dataVoting])
 
   useEffect(() => {
+    if (dataApprove?.hash) {
+      setHashApprove(dataApprove.hash)
+    }
+  }, [dataApprove])
+
+  useEffect(() => {
+    if (isSuccessApprove) {
+      refetchTransactionApprove()
+    }
+  }, [isSuccessApprove])
+
+  useEffect(() => {
+    if (isSuccessTransactionApprove) {
+      refetchDataAllowance()
+    }
+  }, [isSuccessTransactionApprove])
+
+  useEffect(() => {
     setIsLoading(
-      isLoadingVoting || isFetchingTransaction || isLoadingTransactionVoting || isLoadingApprove,
+      isLoadingVoting ||
+        isFetchingTransaction ||
+        isLoadingTransactionVoting ||
+        isFetchingTransactionApprove ||
+        isLoadingTransactionApprove ||
+        isLoadingApprove,
     )
-  }, [isLoadingVoting, isFetchingTransaction, isLoadingTransactionVoting, isLoadingApprove])
+  }, [
+    isLoadingVoting,
+    isFetchingTransaction,
+    isLoadingTransactionVoting,
+    isFetchingTransactionApprove,
+    isLoadingTransactionApprove,
+    isLoadingApprove,
+  ])
 
   useEffect(() => {
     if (hash) {
@@ -207,31 +274,44 @@ const Home = () => {
           amountVote: e.result[3],
         })),
       )
+      console.log('Received data', dataFetch)
     }
   }, [dataFetch, isSuccessFetchList])
 
+  useEffect(() => {
+    if (isSuccessFetchList && dataFetch) {
+      setDataTime([
+        Number(dataFetchTime?.[0]?.result?.toString() || 0) * 1000,
+        Number(dataFetchTime?.[1]?.result?.toString() || 0) * 1000,
+      ])
+      console.log('Received data', dataFetch)
+    }
+  }, [dataFetchTime, isSuccessFetchTime])
+
   const onClickVote = useCallback(
     async (index: number) => {
+      console.log('Voting for ' + index)
       setImageId(index)
       const { address } = (session as any) || {}
       if (!address) {
         setShowSignInModal(true)
         return
       }
+      console.log('Current chain ID', chain?.id)
       if (chain?.id !== CONFIGS.CHAIN_ID) {
         switchNetwork?.()
       }
+      console.log('dataAllowance', dataAllowance)
       if (!dataAllowance || dataAllowance === BigNumber.from(0)) {
-        console.log('dataAllowance', dataAllowance)
         writeApprove?.()
       }
       // handle voting
-      console.log(writeVoting)
+      console.log('Writing contract vote')
       writeVoting?.({
         args: [100 * Math.pow(10, 18), index],
       })
     },
-    [session, chain, writeApprove, writeVoting],
+    [session, chain, writeApprove, writeVoting, dataAllowance],
   )
 
   return (
@@ -273,8 +353,16 @@ const Home = () => {
           </>
         )}
       </div>
+      {!isLoadingFetchList && (
+        <div className="z-10 mt-5 text-center text-lg font-bold text-red-400">
+          <div>VOTING DURATION:</div>
+          <div>{formatTime(dataTime[0]) + ' UTC ~ ' + formatTime(dataTime[1]) + ' UTC'}</div>
+        </div>
+      )}
       {!isLoadingFetchList && data && data.length > 0 && (
-        <div className="z-10 mt-5 font-bold text-green-700">TOTAL REWARDS: {dataTotalVote} TBP</div>
+        <div className="z-10 mt-5 font-bold text-green-700">
+          TOTAL DEPOSITED TOKEN: {dataTotalVote} TBP
+        </div>
       )}
       <div className="my-5 grid w-full max-w-screen-xl grid-cols-1 gap-5 px-5 md:grid-cols-3 xl:px-0">
         {data &&
@@ -306,15 +394,17 @@ const Home = () => {
                 demo={demo}
                 large={large}
                 actions={
-                  <div className="grid grid-cols-2 items-center gap-2">
-                    <div className="pr-5 text-right">
+                  <div className="grid grid-cols-1 items-center gap-1">
+                    <div className="text-center">
                       <div>
+                        Total deposited for this:{' '}
                         {Math.round(
                           Number(utils.formatUnits(amountVote || BigNumber.from(0))) * 100,
                         ) / 100}{' '}
                         TBP
                       </div>
                       <div>
+                        Win ratio:{' '}
                         {Math.round(
                           (Number(utils.formatUnits(amountVote || BigNumber.from(0))) /
                             Number(dataTotalVote)) *
@@ -323,7 +413,7 @@ const Home = () => {
                         %
                       </div>
                     </div>
-                    <div className="text-left">
+                    <div className="text-center">
                       <button
                         type="button"
                         disabled={isLoading && imageId === index + 1}
@@ -338,7 +428,9 @@ const Home = () => {
                           ? 'Vote'
                           : isFetchingTransaction || isLoadingTransactionVoting
                           ? 'Confirming'
-                          : isLoadingApprove
+                          : isLoadingApprove ||
+                            isFetchingTransactionApprove ||
+                            isLoadingTransactionApprove
                           ? 'Approving'
                           : 'Vote'}
                       </button>
