@@ -5,7 +5,7 @@
  * @copyright (c) 2023 Company Platform
  */
 
-'use client'
+'yarnuse client'
 
 import { useEffect, useState } from 'react'
 

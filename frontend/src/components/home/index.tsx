@@ -11,6 +11,7 @@ import Card from '@/components/home/card'
 import Balancer from 'react-wrap-balancer'
 import { useCallback, useEffect, useState } from 'react'
 import {
+  useAccount,
   useConnect,
   useContractRead,
   useContractReads,
@@ -34,6 +35,7 @@ import { formatTime } from '@/lib/utils'
 // import { useVotingModal } from '@/components/layout/voting-modal'
 
 const TOTAL_ITEM = 5
+const MIN_APPROVE_AMOUNT = 100
 const contract = {
   voting: {
     address: CONFIGS.CONTRACT_VOTING,
@@ -56,6 +58,7 @@ const Home = () => {
   const [hashApprove, setHashApprove] = useState<string>('')
   const [imageId, setImageId] = useState<number>(0)
   const { data: session } = useSession()
+  const { address: walletAddress } = useAccount()
   const { chain } = useNetwork()
   const { switchNetwork } = useSwitchNetwork({
     chainId: CONFIGS.CHAIN_ID,
@@ -81,7 +84,8 @@ const Home = () => {
     isLoading: isLoadingFetchList,
     refetch: refetchList,
   } = useContractReads({
-    enabled: false,
+    enabled: true,
+    watch: true,
     contracts: Array.from(Array(TOTAL_ITEM).keys()).map((_, index) => ({
       ...contract.voting,
       functionName: 'imageId',
@@ -94,7 +98,8 @@ const Home = () => {
     refetch: refetchTotalVote,
     isSuccess: isSuccessTotalVote,
   } = useContractRead({
-    enabled: false,
+    enabled: true,
+    watch: true,
     ...contract.voting,
     functionName: 'totalVote',
   })
@@ -199,13 +204,8 @@ const Home = () => {
   }, [dataApprove])
 
   useEffect(() => {
-    if (isSuccessApprove) {
-      refetchTransactionApprove()
-    }
-  }, [isSuccessApprove])
-
-  useEffect(() => {
     if (isSuccessTransactionApprove) {
+      toast.success('Successfully approve!')
       refetchDataAllowance()
     }
   }, [isSuccessTransactionApprove])
@@ -247,10 +247,17 @@ const Home = () => {
   }, [isSuccessVoting, hash])
 
   useEffect(() => {
+    if (hashApprove && isSuccessApprove) {
+      refetchTransactionApprove()
+    }
+  }, [isSuccessApprove, hashApprove])
+
+  useEffect(() => {
     if (isSuccessTransactionVoting) {
       toast.success('Successfully voting!')
       refetchList()
       refetchTotalVote()
+      refetchDataAllowance()
     }
   }, [isSuccessTransactionVoting])
 
@@ -279,12 +286,12 @@ const Home = () => {
   }, [dataFetch, isSuccessFetchList])
 
   useEffect(() => {
-    if (isSuccessFetchList && dataFetch) {
+    if (isSuccessFetchTime && dataFetchTime) {
       setDataTime([
         Number(dataFetchTime?.[0]?.result?.toString() || 0) * 1000,
         Number(dataFetchTime?.[1]?.result?.toString() || 0) * 1000,
       ])
-      console.log('Received data', dataFetch)
+      console.log('Received dataTime', dataFetchTime)
     }
   }, [dataFetchTime, isSuccessFetchTime])
 
@@ -297,12 +304,18 @@ const Home = () => {
         setShowSignInModal(true)
         return
       }
+      if (!walletAddress) {
+        connect()
+      }
       console.log('Current chain ID', chain?.id)
       if (chain?.id !== CONFIGS.CHAIN_ID) {
         switchNetwork?.()
       }
       console.log('dataAllowance', dataAllowance)
-      if (!dataAllowance || dataAllowance === BigNumber.from(0)) {
+      if (
+        Number(utils.formatUnits((dataAllowance as BigNumber) || BigNumber.from(0), 0)) <
+        Number(MIN_APPROVE_AMOUNT * Math.pow(10, 18))
+      ) {
         writeApprove?.()
       }
       // handle voting
@@ -311,7 +324,7 @@ const Home = () => {
         args: [100 * Math.pow(10, 18), index],
       })
     },
-    [session, chain, writeApprove, writeVoting, dataAllowance],
+    [session, chain, writeApprove, writeVoting, dataAllowance, walletAddress],
   )
 
   return (
